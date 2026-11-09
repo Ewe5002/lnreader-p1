@@ -1,4 +1,5 @@
 import { ChapterFilterKey, ChapterOrderKey } from '@database/constants';
+import type { TranslationSettings } from '@services/translation';
 
 export const NOVEL_PAGE_INDEX_PREFIX = 'NOVEL_PAGE_INDEX_PREFIX';
 export const NOVEL_SETTINGS_PREFIX = 'NOVEL_SETTINGS';
@@ -17,6 +18,7 @@ export interface NovelSettingsWithoutSort {
   showChapterTitles: boolean;
   sort?: ChapterOrderKey;
   excludedScanlators?: string[];
+  translationSettings?: TranslationSettings;
 }
 export interface NovelSettings extends NovelSettingsWithoutSort {
   sort: ChapterOrderKey;
