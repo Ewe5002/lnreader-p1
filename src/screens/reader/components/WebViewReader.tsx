@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
   NativeEventEmitter,
   NativeModules,
   StatusBar,
@@ -29,6 +30,8 @@ import { ReaderSearchResult } from '../types';
 import { useTtsSession } from '../hooks/useTtsSession';
 import type { TtsSettings } from '@modules/nitro-tts';
 import { ChapterInfo } from '@database/types';
+import { translateText } from '@services/translation';
+import { useNovelValue } from '@screens/novel/NovelContext';
 import { Dialog } from '@components/Dialog';
 import { TextInput } from 'react-native-paper';
 import useCustomCode from './Hooks/useCustomCode';
@@ -144,6 +147,7 @@ const WebViewReader: React.FC<WebViewReaderProps> = ({
     refetch,
   } = useChapterContext();
   const theme = useTheme();
+  const novelSettings = useNovelValue('novelSettings');
   const initialReaderSettings = useMemo(
     () => ({
       ...initialChapterReaderSettings,
@@ -536,6 +540,46 @@ const WebViewReader: React.FC<WebViewReaderProps> = ({
           __DEV__ && onLogMessage(ev);
           const event: WebViewPostEvent = JSON.parse(ev.nativeEvent.data);
           switch (event.type) {
+            case 'translate-request': {
+              const payload = event.data as { paragraphs?: unknown } | undefined;
+              const paragraphs = Array.isArray(payload?.paragraphs)
+                ? payload.paragraphs.filter(
+                    (item): item is string =>
+                      typeof item === 'string' && item.trim().length > 0,
+                  )
+                : [];
+              const translationSettings = novelSettings.translationSettings;
+              if (!translationSettings?.enabled || paragraphs.length === 0) {
+                break;
+              }
+              void (async () => {
+                try {
+                  const translated = await Promise.all(
+                    paragraphs.map(text =>
+                      translateText({ ...translationSettings, text }),
+                    ),
+                  );
+                  webViewRef.current?.injectJavaScript(`
+                    (function () {
+                      const root = document.getElementById('LNReader-chapter');
+                      const nodes = root ? Array.from(root.querySelectorAll('p'))
+                        .filter(node => (node.innerText || node.textContent || '').trim().length > 0) : [];
+                      const translated = ${JSON.stringify(translated)};
+                      translated.forEach((text, index) => {
+                        if (nodes[index]) nodes[index].textContent = text;
+                      });
+                    })();
+                    true;
+                  `);
+                } catch (error) {
+                  Alert.alert(
+                    'Translation failed',
+                    error instanceof Error ? error.message : String(error),
+                  );
+                }
+              })();
+              break;
+            }
             case 'tts-queue': {
               const payload = event.data as
                 | { queue?: unknown; startIndex?: unknown }
