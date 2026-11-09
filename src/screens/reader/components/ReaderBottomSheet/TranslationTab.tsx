@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Button, TextInput } from 'react-native-paper';
 import { useNovelActions, useNovelValue } from '@screens/novel/NovelContext';
 import { useChapterContext } from '../../ChapterContext';
@@ -16,6 +17,7 @@ const TranslationTab: React.FC = () => {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettings(normalizeTranslationSettings(novelSettings.translationSettings));
   }, [novelSettings.translationSettings]);
 
@@ -49,7 +51,7 @@ const TranslationTab: React.FC = () => {
   }, [settings.enabled, webViewRef]);
 
   return (
-    <View style={styles.container}>
+    <BottomSheetScrollView contentContainerStyle={styles.container}>
       <TextInput
         label="Provider (google, gemini, openai-compatible)"
         value={settings.provider}
@@ -115,7 +117,7 @@ const TranslationTab: React.FC = () => {
         }
       }}>Test provider</Button>
       <Button mode="contained-tonal" onPress={translateChapter}>Translate current chapter</Button>
-    </View>
+    </BottomSheetScrollView>
   );
 };
 
