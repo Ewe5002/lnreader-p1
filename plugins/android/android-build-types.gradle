@@ -20,7 +20,7 @@ android {
             enable releaseAbiSplitsEnabled
             reset()
             include "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
-            universalApk releaseAbiSplitsEnabled
+            universalApk false
         }
     }
 
