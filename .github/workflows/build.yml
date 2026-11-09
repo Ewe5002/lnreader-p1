@@ -138,13 +138,18 @@ jobs:
           ./gradlew :app:assemblePreRelease \
             --build-cache \
             --parallel \
+            -PreleaseAbiSplits=true \
             -PpreReleaseVersionCode="$PRERELEASE_VERSION_CODE" \
             -PpreReleaseVersionName="$PRERELEASE_VERSION_NAME" \
             --stacktrace
 
-          mv \
-            app/build/outputs/apk/preRelease/app-preRelease.apk \
-            "app/build/outputs/apk/preRelease/$PRERELEASE_APK_NAME"
+          mkdir -p app/build/outputs/apk/preRelease/preview-artifacts
+          for apk in app/build/outputs/apk/preRelease/*.apk; do
+            [ -f "$apk" ] || continue
+            abi="$(basename "$apk" .apk | sed -E 's/^app-(.*)-preRelease$/\1/')"
+            cp "$apk" "app/build/outputs/apk/preRelease/preview-artifacts/LNReader-${abi}-${GITHUB_SHA::8}.apk"
+          done
+          test -n "$(find app/build/outputs/apk/preRelease/preview-artifacts -maxdepth 1 -name '*.apk' -print -quit)"
 
       - name: Upload Preview Sourcemap
         uses: actions/upload-artifact@v4
@@ -159,7 +164,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PRERELEASE_ARTIFACT_NAME }}
-          path: android/app/build/outputs/apk/preRelease/${{ env.PRERELEASE_APK_NAME }}
+          path: android/app/build/outputs/apk/preRelease/preview-artifacts/*.apk
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
