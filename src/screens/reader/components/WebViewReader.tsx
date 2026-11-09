@@ -491,31 +491,10 @@ const WebViewReader: React.FC<WebViewReaderProps> = ({
           webViewRef.current?.injectJavaScript(
             adjacentChapterScriptRef.current,
           );
-          // Continuous vertical reading: when the reader reaches the end of
-          // the current chapter, request the next chapter once. The native
-          // chapter loader keeps history/progress and prefetch behaviour intact.
-          webViewRef.current?.injectJavaScript(`
-            (function () {
-              if (window.__lnInfiniteScrollBound) return;
-              window.__lnInfiniteScrollBound = true;
-              let requestingNextChapter = false;
-              let lastHeight = 0;
-              window.addEventListener('scroll', function () {
-                if (requestingNextChapter || document.body.classList.contains('page-reader')) return;
-                const root = document.documentElement;
-                const body = document.body;
-                const scrollTop = window.scrollY || root.scrollTop || body.scrollTop;
-                const viewport = window.innerHeight || root.clientHeight;
-                const height = Math.max(root.scrollHeight, body.scrollHeight);
-                if (height === lastHeight && scrollTop + viewport < height - 120) return;
-                if (scrollTop + viewport >= height - 120) {
-                  requestingNextChapter = true;
-                  window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'next' }));
-                }
-              }, { passive: true });
-            })();
-            true;
-          `);
+          // Do not force chapter navigation at the bottom of the document.
+          // True continuous reading must append the next chapter to this DOM;
+          // navigating here reloads the reader and causes the abrupt jump.
+
 
           const searchText = searchTextRef.current.trim();
           if (searchText) {
