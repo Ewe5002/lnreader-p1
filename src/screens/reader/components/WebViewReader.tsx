@@ -581,11 +581,19 @@ const WebViewReader: React.FC<WebViewReaderProps> = ({
               }
               void (async () => {
                 try {
-                  const translated = await Promise.all(
-                    paragraphs.map(text =>
-                      translateText({ ...translationSettings, text }),
-                    ),
-                  );
+                  const translated: string[] = [];
+                  // Keep a small concurrency window to avoid overwhelming
+                  // public translation endpoints on long chapters.
+                  for (let index = 0; index < paragraphs.length; index += 4) {
+                    const batch = paragraphs.slice(index, index + 4);
+                    translated.push(
+                      ...(await Promise.all(
+                        batch.map(text =>
+                          translateText({ ...translationSettings, text }),
+                        ),
+                      )),
+                    );
+                  }
                   webViewRef.current?.injectJavaScript(`
                     (function () {
                       const root = document.getElementById('LNReader-chapter');
