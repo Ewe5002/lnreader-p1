@@ -333,31 +333,9 @@ const WebViewReader: React.FC<WebViewReaderProps> = ({
               <link rel="stylesheet" href="${assetsUriPrefix}/css/pageReader.css">
               <link rel="stylesheet" href="${assetsUriPrefix}/css/toolWrapper.css">
               <link rel="stylesheet" href="${assetsUriPrefix}/css/tts.css">
-              <style id="ln-novela-reader-ornaments">
-                #LNReader-chapter h1,
-                #LNReader-chapter h2 {
-                  position: relative;
-                  text-align: center;
-                  padding-bottom: 18px;
-                  margin: 1.8em 0 1.2em;
-                  letter-spacing: 0.025em;
-                }
-                #LNReader-chapter h1::after,
-                #LNReader-chapter h2::after {
-                  content: "✦  ·  ✦";
-                  display: block;
-                  margin: 12px auto 0;
-                  color: var(--theme-primary);
-                  font-size: 0.72em;
-                  letter-spacing: 0.35em;
-                  opacity: 0.78;
-                }
-                #LNReader-chapter hr {
-                  width: 42%;
-                  height: 1px;
-                  border: 0;
-                  margin: 2em auto;
-                  background: linear-gradient(90deg, transparent, var(--theme-outline), transparent);
+              <style id="ln-reader-tts-controller-visibility">
+                #TTS-Controller {
+                  display: none !important;
                 }
               </style>
               <style>
